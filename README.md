@@ -57,17 +57,17 @@ The `Bug_Report/` folder contains the defect report and `Jira.csv` export.
 
 | ID | Issue observed | Proposed severity |
 |---|---|---|
-| BUG-01 | Negative, non-numeric, and very large salary values accepted on create | High* |
-| BUG-02 | Negative and non-numeric salary values accepted on update | High* |
-| BUG-03 | Invalid email format accepted on create and update | Medium* |
-| BUG-04 | Duplicate email accepted when letter case differs | Medium* |
-| BUG-05 | Invalid status handled inconsistently on create and update | Medium* |
-| BUG-06 | First name accepts blank, numeric, and 300-character values | Low* |
-| BUG-07 | Invalid `hireDate` format accepted on create | Medium* |
-| BUG-08 | HTML/script-like input returned or stored without visible neutralization | Security review required* |
-| BUG-09 | Invalid token returns HTTP 403 rather than HTTP 401 | Low* |
-| BUG-10 | Invalid `limit` query value is not rejected | Low* |
-| BUG-11 | Invalid `page` query value is not rejected | Low* |
+| BUG-01 | Negative, non-numeric, and very large salary values accepted on create | *High* |
+| BUG-02 | Negative and non-numeric salary values accepted on update | *High* |
+| BUG-03 | Invalid email format accepted on create and update | *Medium* |
+| BUG-04 | Duplicate email accepted when letter case differs | *Medium* |
+| BUG-05 | Invalid status handled inconsistently on create and update | *Medium* |
+| BUG-06 | First name accepts blank, numeric, and 300-character values | *Low* |
+| BUG-07 | Invalid `hireDate` format accepted on create | *Medium* |
+| BUG-08 | HTML/script-like input returned or stored without visible neutralization | *Security review required* |
+| BUG-09 | Invalid token returns HTTP 403 rather than HTTP 401 | *Low* |
+| BUG-10 | Invalid `limit` query value is not rejected | *Low* |
+| BUG-11 | Invalid `page` query value is not rejected | *Low* |
 
 *Severity and defect status should be confirmed against the API specification and reproducible evidence. An API returning HTML/script-like text does not by itself prove stored XSS; verify whether it executes in a consuming UI. HTTP 403 instead of 401 is a defect only if the API contract requires 401 for the tested case.
 
