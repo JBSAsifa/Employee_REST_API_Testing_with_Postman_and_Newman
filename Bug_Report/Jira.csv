@@ -1,0 +1,196 @@
+Summary,Issue key,Issue id,Issue Type,Status,Project key,Project name,Project type,Project lead,Project lead id,Project description,Priority,Resolution,Assignee,Assignee Id,Reporter,Reporter Id,Creator,Creator Id,Created,Updated,Last Viewed,Resolved,Due date,Votes,Labels,Labels,Labels,Description,Environment,Watchers,Watchers Id,Original estimate,Remaining Estimate,Time Spent,Work Ratio,Σ Original Estimate,Σ Remaining Estimate,Σ Time Spent,Security Level,Custom field (Development),Custom field (Issue colour),Custom field (Rank),Custom field (Start date),Custom field (Story point estimate),Custom field (Team),Custom field (Vulnerability),Status Category,Status Category Changed
+BUG-03: Invalid email format accepted on create and update,ERA-3,10039,Bug,Done,ERA,Employee REST API ,software,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,Medium,Done,,,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,25/Oct/26 7:16 PM,25/Oct/26 7:22 PM,,25/Oct/26 7:22 PM,,0,,,,"Module: Create and Update Employee
+
+Steps to Reproduce
+
+# Log in as admin and copy the token.
+# Send POST /api/employees with ""email"": ""invalid-email-1792856870"" (no @ and no domain).
+# Send PATCH /api/employees/{id} with the body {""email"": ""not-an-email""}.
+
+Expected Result
+400 Bad Request with an email-format error.
+
+Actual Result
+Create returns 201 Created and stores the invalid email (id 9). Update returns 200 OK and record id 6 now has the email ""not-an-email"".
+
+Impact
+Unusable contact data is stored. Email is used for identity, filtering and duplicate checks.
+
+*Test cases:* TC15, TC95",,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,,,,,,,,{},,0|i0001v:,,,,,Done,25/Oct/26 7:22 PM
+BUG-04: Duplicate email accepted when letter case differs,ERA-4,10040,Bug,To Do,ERA,Employee REST API ,software,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,Medium,,,,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,25/Oct/26 7:17 PM,25/Oct/26 7:17 PM,,,,0,,,,"Module: Create Employee (POST /api/employees)
+
+Steps to Reproduce
+
+# Log in as admin and copy the token.
+# Take an existing employee's email, for example [cheyenne.gaylord.179285686912771@company.com|mailto:cheyenne.gaylord.179285686912771@company.com] (id 8).
+# Send POST /api/employees with the same address in upper case ([CHEYENNE.GAYLORD.179285686912771@COMPANY.COM|mailto:CHEYENNE.GAYLORD.179285686912771@COMPANY.COM]) and a different phone number.
+
+Expected Result
+409 Conflict (or 400 Bad Request). Email addresses are case-insensitive in practice.
+
+Actual Result
+201 Created. A second record (id 24) is stored with the upper-case email. An exact duplicate is rejected correctly (TC16).
+
+Impact
+Two employee records exist for one email address.
+
+*Test case:* TC75",,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,,,,,,,,{},,0|i00021:,,,,,To Do,25/Oct/26 7:17 PM
+BUG-05: Invalid status handled inconsistently on create and update,ERA-5,10041,Bug,Done,ERA,Employee REST API ,software,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,Medium,Done,,,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,25/Oct/26 7:17 PM,25/Oct/26 7:22 PM,,25/Oct/26 7:22 PM,,0,,,,"Module: Create and Update Employee
+
+Steps to Reproduce
+
+# Log in as admin and copy the token.
+# Send POST /api/employees with ""status"": ""xyz"".
+# Send PATCH /api/employees/{id} with the body {""status"": ""banana""}.
+
+Expected Result
+400 Bad Request that lists the allowed status values.
+
+Actual Result
+Create returns 201 Created and silently changes the value to ""active"" (id 13). Update returns 200 OK and stores the arbitrary value ""banana"" (id 6).
+
+Impact
+The client is not told its input was rejected. Arbitrary statuses break status filters and business rules.
+
+*Test cases:* TC45, TC96",,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,,,,,,,,{},,0|i0002e:,,,,,Done,25/Oct/26 7:22 PM
+BUG-10: limit query parameter is not validated,ERA-10,10046,Bug,Done,ERA,Employee REST API ,software,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,Low,Done,,,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,25/Oct/26 7:21 PM,25/Oct/26 7:22 PM,,25/Oct/26 7:22 PM,,0,,,,"Module: Get All Employees (GET /api/employees)
+
+Steps to Reproduce
+
+# Log in as admin and copy the token.
+# Send GET /api/employees?limit=-1.
+# Repeat with limit=0 and with limit=abc.
+
+Expected Result
+400 Bad Request, because limit must be a whole number of 1 or more.
+
+Actual Result
+200 OK in all cases. limit=-1 returns an employee list. limit=0 and limit=abc return an empty data array with ""totalPages"": null and ""limit"" set to 0 or null.
+
+Impact
+Paging information is inconsistent and clients fail silently.
+
+*Test cases:* TC49, TC80, TC81",,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,,,,,,,,{},,0|i0002m:,,,,,Done,25/Oct/26 7:22 PM
+BUG-07: Invalid hireDate format accepted on create,ERA-7,10043,Bug,To Do,ERA,Employee REST API ,software,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,Medium,,,,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,25/Oct/26 7:19 PM,25/Oct/26 7:19 PM,,,,0,,,,"Module: Create Employee (POST /api/employees)
+
+Steps to Reproduce
+
+# Log in as admin and copy the token.
+# Send POST /api/employees with ""hireDate"": ""15-31-2024"" (an impossible date).
+
+Expected Result
+400 Bad Request for an invalid date.
+
+Actual Result
+201 Created. Record id 15 stores ""hireDate"": ""15-31-2024"".
+
+Impact
+Sorting, filtering and reports that use dates break.
+
+*Test case:* TC61",,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,,,,,,,,{},,0|i0002v:,,,,,To Do,25/Oct/26 7:19 PM
+BUG-08: HTML and script content stored unsanitised (stored XSS),ERA-8,10044,Bug,To Do,ERA,Employee REST API ,software,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,High,,,,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,25/Oct/26 7:19 PM,25/Oct/26 7:19 PM,,,,0,,,,"Module: Create and Update Employee
+
+Steps to Reproduce
+
+# Log in as admin and copy the token.
+# Send POST /api/employees with ""firstName"": ""<script>alert(1)</script>"".
+# Send PATCH /api/employees/{id} with the body {""position"": ""<img src=x onerror=alert(1)>""}.
+
+Expected Result
+The payload is rejected with 400 Bad Request, or it is cleaned or encoded before it is stored.
+
+Actual Result
+Both requests succeed. The payloads are stored and returned unchanged (ids 23 and 6).
+
+Impact
+Any web or mobile client that shows these fields without escaping is open to stored cross-site scripting (OWASP Top 10, Injection category).
+
+*Test cases:* TC74, TC103",,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,,,,,,,,{},,0|i0002z:,,,,,To Do,25/Oct/26 7:19 PM
+BUG-09: Invalid or expired token returns 403 instead of 401,ERA-9,10045,Bug,To Do,ERA,Employee REST API ,software,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,Low,,,,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,25/Oct/26 7:20 PM,25/Oct/26 7:20 PM,,,,0,,,,"Module: Authentication (all protected endpoints)
+
+Steps to Reproduce
+
+# Send POST, GET, PATCH or DELETE to any /api/employees endpoint.
+# Set the header Authorization: Bearer invalid.token.value.
+
+Expected Result
+401 Unauthorized, because authentication failed.
+
+Actual Result
+403 Forbidden with the message ""Invalid or expired token"". A missing token correctly returns 401, so the behaviour is inconsistent.
+
+Impact
+Clients that treat 401 as ""log in again"" will not refresh an expired session.
+
+*Test cases:* TC73, TC91, TC104, TC108",,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,,,,,,,,{},,0|i0003a:,,,,,To Do,25/Oct/26 7:20 PM
+"BUG-01: Negative, non-numeric and out-of-range salary accepted on create",ERA-1,10037,Bug,In Progress,ERA,Employee REST API ,software,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,High,,,,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,25/Oct/26 7:14 PM,25/Oct/26 7:22 PM,,,,0,Api,create-employee,validation,"Module: Create Employee (POST /api/employees)
+
+Steps to Reproduce
+
+# Log in as admin (POST /api/auth/login) and copy the token.
+# Send POST /api/employees with a valid body but ""salary"": -5000.
+# Repeat with ""salary"": ""abc"", ""salary"": ""50000"" (a string) and ""salary"": 9999999999999.
+
+Expected Result
+400 Bad Request with a validation message. Salary must be a positive number within a sensible range.
+
+Actual Result
+201 Created for every value. Stored records show -5000 (id 10), ""abc"" (id 11), 9999999999999 (id 18) and ""50000"" stored as a string (id 19).
+
+Impact
+Payroll data is corrupted and salary calculations will fail or give wrong results.
+
+*Test cases:* TC17, TC42, TC66, TC67",,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,,,,,,,,{},,0|i0003i:,,,,,In Progress,25/Oct/26 7:22 PM
+BUG-02: Negative and non-numeric salary accepted on update,ERA-2,10038,Bug,In Progress,ERA,Employee REST API ,software,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,High,,,,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,25/Oct/26 7:16 PM,25/Oct/26 7:22 PM,,,,0,,,,"Module: Update Employee (PATCH /api/employees/:id)
+
+Steps to Reproduce
+
+# Log in as admin and copy the token.
+# Send PATCH /api/employees/{id} with the body {""salary"": -100}.
+# Repeat with the body {""salary"": ""lots""}.
+
+Expected Result
+400 Bad Request, using the same salary rules as create.
+
+Actual Result
+200 OK with the message ""Employee updated successfully"". Record id 6 now holds salary -100, and later ""lots"".
+
+Impact
+Validation on create can be bypassed by updating the record afterwards.
+
+*Test cases:* TC46, TC98",,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,,,,,,,,{},,0|i0003k:,,,,,In Progress,25/Oct/26 7:22 PM
+"BUG-06: First name accepts blank, numeric and 300-character values",ERA-6,10042,Bug,In Progress,ERA,Employee REST API ,software,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,Low,,,,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,25/Oct/26 7:18 PM,25/Oct/26 7:22 PM,,,,0,,,,"Module: Create Employee (POST /api/employees)
+
+Steps to Reproduce
+
+# Log in as admin and copy the token.
+# Send POST /api/employees with ""firstName"": "" "" (a single space).
+# Repeat with ""firstName"": ""J0hn123"" and with a 300-character string of the letter A.
+
+Expected Result
+400 Bad Request. A first name should not be blank, should contain letters only, and should have a maximum length.
+
+Actual Result
+201 Created for all three values. They are stored as sent (ids 21, 22 and 12). A completely empty first name is rejected correctly (TC43).
+
+Impact
+Poor data quality. Very long names can break screen layouts and reports.
+*Test cases:* TC44, TC69, TC70",,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,,,,,,,,{},,0|i0003l:,,,,,In Progress,25/Oct/26 7:22 PM
+BUG-11: page query parameter is not validated,ERA-11,10047,Bug,In Progress,ERA,Employee REST API ,software,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,Low,,,,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,25/Oct/26 7:21 PM,25/Oct/26 7:22 PM,,,,0,,,,"Module: Get All Employees (GET /api/employees)
+
+Steps to Reproduce
+
+# Log in as admin and copy the token.
+# Send GET /api/employees?page=0.
+# Repeat with page=-5.
+
+Expected Result
+400 Bad Request, because page must be 1 or more.
+
+Actual Result
+200 OK with an empty data array. The response shows ""currentPage"": 0 or -5.
+
+Impact
+Invalid paging input is accepted and gives misleading empty results.
+
+*Test cases:* TC82, TC83",,Joinab Binte Siraj Asifa,712020:a3d70822-76fe-40ce-97a4-ec9266e2c17a,,,,,,,,,{},,0|i0003n:,,,,,In Progress,25/Oct/26 7:22 PM
